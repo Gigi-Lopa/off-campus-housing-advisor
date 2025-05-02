@@ -44,4 +44,4 @@ class ReviewSentiment:
             "sentiment": sentiment
         }
 review_sentiment = ReviewSentiment() 
-print(review_sentiment.get_sentiment("Landlord mb0r0 vane moyo wakanaka"))
+print(review_sentiment.get_sentiment("Was a kind hearted person. His patient with you and everyone"))

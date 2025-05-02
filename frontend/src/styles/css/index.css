@@ -1,0 +1,22 @@
+@font-face {
+  font-family: "HF BK";
+  src: url(../fonts/AirbnbCereal_W_Bk.otf);
+}
+@font-face {
+  font-family: "HF BLK";
+  src: url(../fonts/AirbnbCereal_W_Bk.otf);
+}
+@font-face {
+  font-family: "HF BD";
+  src: url(../fonts/AirbnbCereal_W_Bd.otf);
+}
+
+* {
+  margin: 0;
+  padding: 0px;
+  font-family: "HF BK"; 
+  transition: all ease-in-out 0.3s;
+}
+a{
+  text-decoration: none;
+}
