@@ -2,16 +2,14 @@ import React from 'react'
 import sample from "../styles/img/q.jpg"
 import Review from './Review'
 import OtherListing from './OtherListing'
+import ReviewCount from './ReviewCount'
 function ListingInfo() {
   return (
     <div className='w100 listing-info'>
         <div className='container'>
             <div className='listing-header'>
                 <h4>21 Flamboyat, Shashi</h4>
-                <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
-                    <button type="button" class="btn btn-review"><span className='bi bi-hand-thumbs-up-fill' style={{color:"green"}}></span> 45 Positive reviews</button>
-                    <button type="button" class="btn btn-review"><span className='bi bi-hand-thumbs-down-fill' style={{color:"red"}}></span> 10 Negative reviews</button>
-                </div>
+                <ReviewCount/>
             </div>
             <div className='listing-images'>          
                 <div class="row g-2">

@@ -7,7 +7,6 @@ export default function Review() {
       <div className="flex items-center gap-4 mb-2">
         <img
           src={user}
-
           alt="User avatar"
           className="rounded-full user-img"
         />
