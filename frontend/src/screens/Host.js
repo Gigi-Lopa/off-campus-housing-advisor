@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import OtherListing from '../components/OtherListing'
 import ReviewCount from '../components/ReviewCount'
 import Review from '../components/Review'
 import Footer from '../components/Footer'
+import AddListingModal from '../components/AddListingModal'
 
 function Host() {
+    let [add_listing, set_add_listing] = useState(false)
+
   return (
     <div className='host'>
+        {add_listing && <AddListingModal/>}
        <div className='host-inf'>
             <div className='container'>
                 <div className='row'>
@@ -28,7 +32,7 @@ function Host() {
                                 <div className='row'>
                                     <OtherListing/>
                                     <div className='host-add-listing col-md-3'>
-                                        <button> 
+                                        <button onClick={()=>{set_add_listing(true)}}> 
                                             <div className='flex flex_col '>
                                                 <span className='tertiary-color'>Add</span>
                                                 <span className='bi bi-plus-lg tertiary-color'></span>
@@ -47,7 +51,6 @@ function Host() {
                                         <Review/>
                                         <Review/>
                                         <Review/>
-
                                 </div>
                             </div>
                         </div>

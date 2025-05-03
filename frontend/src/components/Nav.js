@@ -31,7 +31,7 @@ function Nav() {
                                 <span className='bi bi-person-fill'></span>
                             </div>
                             
-                            <div class="popup-menu">
+                            <div className="popup-menu">
                             <Link to = "/client/signin">Sign In</Link>
                             <Link to = "/client/signup">Sign Up</Link>
                             </div>
