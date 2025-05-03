@@ -333,14 +333,7 @@
     width: 100%;
     margin-top: 30px;
 }
-.listing-services .service-icon {
-    font-size: 1.6rem;
-    margin-right: 15px;
-    align-self: center;
-}
-.listing-services .service{
-   align-self: center;
-}
+
 .listing-services .col-md-6{
     margin-bottom: 15px ;
 }
@@ -457,7 +450,7 @@
 }
 .modal-content.add-listing{
     width: 50%;
-    min-height: 70vh;
+    height: fit-content;
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -465,7 +458,7 @@
    justify-content: end;
    display: flex;
 }
-.modal .gen-info h4{
+.modal h4{
     font-size: 1.3rem;
     margin-bottom: 25px;
     font-weight: 600;
@@ -532,7 +525,36 @@ form label{
     border-radius: 50px ;
     margin-right: 15px;
 }
-
 .rooms .room-badge span{
     font-size: 0.8rem;
+}
+
+/** SERVICES **/
+.services-tags{
+    display: flex;
+    flex-wrap: wrap;
+}
+.service-icon {
+    font-size: 1.6rem;
+    margin-right: 15px;
+    align-self: center;
+    color:#333;
+}
+.service{
+    margin-right: 25px;
+    margin-bottom: 25px;
+    border: 1.5px solid #DFD9D9;
+    align-self: center;
+    padding: 15px 20px;
+    border-radius: 7.5px;
+    background-color: #F7F7F7;
+}
+.service:hover{
+    background-color: #f0f0f0;
+}
+.service .service-tag{
+    font-size: 0.9rem;    
+}
+.service.service-selected {
+    border-color: #5e2ced;
 }

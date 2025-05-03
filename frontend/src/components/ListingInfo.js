@@ -12,38 +12,38 @@ function ListingInfo() {
                 <ReviewCount/>
             </div>
             <div className='listing-images'>          
-                <div class="row g-2">
-                    <div class="col-md-6 listing-img-con">
+                <div className="row g-2">
+                    <div className="col-md-6 listing-img-con">
                         <div className='img-label'>
                             <span>Bed Room</span>
                         </div>  
-                        <img src={sample} class="img-fluid rounded w-100 h-100 object-fit-cover" alt="Main" />
+                        <img src={sample} className="img-fluid rounded w-100 h-100 object-fit-cover" alt="Main" />
                     </div>
-                    <div class="col-md-6">
-                        <div class="row g-2">
-                            <div class="col-6 listing-img-con">
+                    <div className="col-md-6">
+                        <div className="row g-2">
+                            <div className="col-6 listing-img-con">
                                 <div className='img-label'>
                                     <span>Kitchen</span>
                                 </div>  
-                                <img src={sample}  class="img-fluid rounded w-100 h-100 object-fit-cover" alt="img2" />
+                                <img src={sample}  className="img-fluid rounded w-100 h-100 object-fit-cover" alt="img2" />
                             </div>
-                            <div class="col-6 listing-img-con">
+                            <div className="col-6 listing-img-con">
                                 <div className='img-label'>
                                     <span>Toilet</span>
                                 </div>  
-                                <img src={sample}  class="img-fluid rounded w-100 h-100 object-fit-cover" alt="img3" />
+                                <img src={sample}  className="img-fluid rounded w-100 h-100 object-fit-cover" alt="img3" />
                             </div>
-                            <div class="col-6 listing-img-con">
+                            <div className="col-6 listing-img-con">
                                 <div className='img-label'>
                                     <span>Dining Area</span>
                                 </div>  
-                                <img src={sample}  class="img-fluid rounded w-100 h-100 object-fit-cover" alt="img4" />
+                                <img src={sample}  className="img-fluid rounded w-100 h-100 object-fit-cover" alt="img4" />
                             </div>
-                            <div class="col-6 position-relative">
+                            <div className="col-6 position-relative">
                                 <div className='img-label'>
                                     <span>Exterior</span>
                                 </div>  
-                                <img src={sample}  class="img-fluid rounded w-100 h-100 object-fit-cover" alt="img5" />
+                                <img src={sample}  className="img-fluid rounded w-100 h-100 object-fit-cover" alt="img5" />
                             </div>
                         </div>
                     </div>
