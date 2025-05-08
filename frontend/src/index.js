@@ -8,6 +8,8 @@ import reportWebVitals from './reportWebVitals';
 import {createBrowserRouter,  RouterProvider} from "react-router-dom"
 import ListingScreen from './screens/ListingScreen';
 import Host from './screens/Host';
+import Signup from './screens/Signup';
+import Signin from './screens/Signin';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 let router = createBrowserRouter([
@@ -16,17 +18,25 @@ let router = createBrowserRouter([
     element : <Index/>
   },
   {
-    path : "*",
-    element  :<div>Not Found</div>
-  },
-  {
     path :"/listing/:id",
     element : <ListingScreen/>
   },
   {
     path:"/host/:id", 
     element :<Host/>
-  }
+  },
+  {
+    path: "/login/:mode",
+    element : <Signin/>
+  },
+  {
+    path : "/signup/:mode",
+    element : <Signup/>
+  },
+  {
+    path : "*",
+    element  :<div>Not Found</div>
+  },
 ])
 
 root.render(

@@ -1,11 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function Nav() {
     let [search_value, set_search_value] = useState("")
 
-  return (
+    useEffect(()=>{
+        
+    })
 
+  return (
     <nav className="navbar">
         <div className='container w100'>
             <div className='flex flex_row space-items w100'>
@@ -23,7 +26,7 @@ function Nav() {
                 <div className='col nav-links flex justify-end'>
                     <ul className='flex flex_row'>
                         <li className='link-btn'>
-                            <Link className='nav-link' to={"/host/homes"}>List Boarding House</Link>
+                            <Link className='nav-link' to={"/login/host"}>List Boarding House</Link>
                         </li>
                         <li className='profile-links shadow-sm'>
                             <div className='flex flex_row profile-badge'>

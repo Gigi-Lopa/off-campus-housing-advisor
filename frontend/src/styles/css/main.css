@@ -558,3 +558,54 @@ form label{
 .service.service-selected {
     border-color: #5e2ced;
 }
+
+/*** LOGIN CONTAINER ***/
+.login-container{
+    height: 100vh;
+    width: 100%;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.auth-form{
+    width: 35%;
+}
+.form-container{
+    padding: 35px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow:  12px 12px 40px #f0f0f0,
+                -12px -12px 40px #ffffff;
+}
+.form-container form{
+    width: 100%;
+}
+.form-container form h4{
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding-bottom: 15px;
+    text-align: center;   
+}
+.form-container .form-content .input-group{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+}
+.input-group label{
+    font-size: 1rem;
+    font-weight: 600;
+}
+.input-group input{
+    padding: 10px ;
+    font-size: 0.9rem;
+    border: 1.5px solid #DFD9D9;
+    outline-color: #5e2ced;
+    transition: unset !important;
+    border-radius: 7.5px;
+}
+.auth-option{
+    margin-top: 25px;
+}
+ 
