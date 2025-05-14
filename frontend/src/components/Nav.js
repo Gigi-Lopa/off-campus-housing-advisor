@@ -1,13 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, {useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Cookie from "js-cookie"
 
 function Nav() {
+    let navigate = useNavigate()
     let [search_value, set_search_value] = useState("")
+    let [token , set_token] =  useState(null)
 
     useEffect(()=>{
-        
-    })
+        let token = Cookie.get("client_token");
+        if(token){
+            set_token(token)
+        }
+    }, [])
 
+    let log_out = ()=>{
+        Cookie.remove("client_token");
+        window.location.reload()
+    }
+    
   return (
     <nav className="navbar">
         <div className='container w100'>
@@ -26,7 +37,7 @@ function Nav() {
                 <div className='col nav-links flex justify-end'>
                     <ul className='flex flex_row'>
                         <li className='link-btn'>
-                            <Link className='nav-link' to={"/login/host"}>List Boarding House</Link>
+                            <Link className='nav-link' to={"/login/host"}>Host Management</Link>
                         </li>
                         <li className='profile-links shadow-sm'>
                             <div className='flex flex_row profile-badge'>
@@ -35,8 +46,19 @@ function Nav() {
                             </div>
                             
                             <div className="popup-menu">
-                            <Link to = "/client/signin">Sign In</Link>
-                            <Link to = "/client/signup">Sign Up</Link>
+                                {
+                                    !token ? (
+                                        <>
+                                         <Link to = "/login/client">Log In</Link>
+                                         <Link to = "/client/signup">Sign Up</Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                             <Link to = {`/profile/${token}`}>Profile</Link>
+                                             <Link to = "" onClick={log_out}>Log out</Link>
+                                        </>
+                                    )
+                                }
                             </div>
                         </li>
                     </ul>

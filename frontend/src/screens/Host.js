@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import OtherListing from '../components/OtherListing'
 import ReviewCount from '../components/ReviewCount'
 import Review from '../components/Review'
@@ -6,12 +6,24 @@ import Footer from '../components/Footer'
 import AddListingModal from '../components/AddListingModal'
 import AddServiceModal from '../components/AddServiceModal'
 import AddImagesModal from '../components/AddImagesModal'
+import Cookie from "js-cookie"
 
 function Host() {
     let [add_listing, set_add_listing] = useState(false)
     let [add_services, set_add_services] = useState(false)
     let [add_images, set_images] = useState(false)
     let [listing_info, set_listing_info] = useState({})
+    let [uploading, set_uploading] = useState(false)
+    let [status, set_status] = useState({error : false, success : false, isExist : false})
+    let token = useRef()
+
+
+    useEffect(()=>{
+        let token_ = Cookie.get("host_token")
+        if(token){
+            token.current = token_
+        }
+    },[])
 
     let addGenInfo = (data)=>{
         set_listing_info(prev=>({
@@ -32,19 +44,55 @@ function Host() {
     }
 
     let addImages = (data) =>{
-        set_listing_info(prev=>({
-            ...prev,
-            images : data
-        }))
-        setTimeout(()=>console.log(listing_info), 5000)
-        
+        onSubmit(data) 
     }
+
+    const onSubmit = (images) => {
+        const form_data = new FormData();
+        listing_info.general_info.host_id = token.current;
+
+        form_data.append("general_information", JSON.stringify(listing_info.general_info));
+        form_data.append("services", JSON.stringify(listing_info.services));
+
+        const imageFields = ["bedroom", "dining_room", "exterior", "kitchen", "toilet"];
+        imageFields.forEach((field) => {
+            form_data.append(field, images[field]);
+        });
+
+        set_uploading(true);
+
+        fetch(`${process.env.REACT_APP_API_ADDRESS}/add/listing`, {
+            method: "POST",
+            body: form_data,
+        })
+        .then((res) => res.json())
+        .then((res) => {
+            if (res.isExist) {
+                return set_status({ error: false, isExist: true, success: false });
+            }
+            if (res.status) {
+                // ADD TO CURRENT LISTING
+                return set_status({ error: false, isExist: false, success: true });
+            }
+            set_status({ error: true, isExist: false, success: false });
+        })
+        .catch((err) => {
+            console.error(err);
+            set_status({ error: true, isExist: false, success: false });
+        })
+        .finally(() => {
+            set_uploading(false);
+            setTimeout(() => {
+                set_status({ error: false, isExist: false, success: false });
+            }, 3500);
+        });
+    };
 
   return (
     <div className='host'>
         {add_listing && <AddListingModal onSave = {addGenInfo} close_modal={()=>set_add_listing(false)}/>}
         {add_services && <AddServiceModal onSave = {addServices} close_modal={()=>set_add_services(false)}/>}
-        {add_images && <AddImagesModal onSave = {addImages} close_modal={()=>set_images(false)}/>}
+        {add_images && <AddImagesModal onSave = {addImages} close_modal={()=>set_images(false)} status = {status}/>}
        <div className='host-inf'>
             <div className='container'>
                 <div className='row'>

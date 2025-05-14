@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import "./styles/css/index.css"
 import "./styles/bootstrap/css/bootstrap.css"
@@ -10,6 +10,7 @@ import ListingScreen from './screens/ListingScreen';
 import Host from './screens/Host';
 import Signup from './screens/Signup';
 import Signin from './screens/Signin';
+import Cookie from "js-cookie"
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 let router = createBrowserRouter([

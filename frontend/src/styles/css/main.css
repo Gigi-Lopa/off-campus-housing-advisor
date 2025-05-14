@@ -93,10 +93,11 @@
     width: 100%;
     background: none;
     border: none;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     text-align: left;
     padding: 8px;
     cursor: pointer;
+    color: black !important;
 }
 
 .profile-links:hover .popup-menu {
@@ -135,6 +136,18 @@
     background-color: #260c6d;
 }
 /*** LISTINGS ***/
+.listing-location{
+    margin-top: 12px;
+    font-weight: 550 !important;
+    font-size: 1.3rem !important;
+    color: #454545 !important;
+}
+.listing-location .listing-location-icon{
+    margin: 4px 10px 0px 10px;
+    justify-self: center;
+    font-size: .9rem;
+    color: #454545;
+}
 .listings{
     padding-top: 160px;
 } 
@@ -279,7 +292,7 @@
 .listing-details-header .stars{
     font-size: 0.8rem;
 }
-.listing-details-header .bd-r{
+.bd-r{
     border-right: 1px solid #DFD9D9;
 }
 .listing-hoster{
@@ -349,6 +362,11 @@
 }
 .other-listings{
     margin-top: 50px;
+}
+.other-listings .other-listing-none{
+    color: #454545;
+    text-align: center;
+    
 }
 .other-listing-card{
     margin-bottom: 15px ;
@@ -497,6 +515,7 @@ form label{
     font-size: 0.9rem;
     border-radius: 7.5px;
     padding: 7px 15px ;
+    color: #454545;
     border: 1px solid #DFD9D9;
     transition: unset !important;
 
@@ -538,7 +557,7 @@ form label{
     font-size: 1.6rem;
     margin-right: 15px;
     align-self: center;
-    color:#333;
+    color:#454545;
 }
 .service{
     margin-right: 25px;
@@ -547,6 +566,7 @@ form label{
     align-self: center;
     padding: 15px 20px;
     border-radius: 7.5px;
+    color: #454545;
     background-color: #F7F7F7;
 }
 .service:hover{
@@ -608,4 +628,57 @@ form label{
 .auth-option{
     margin-top: 25px;
 }
- 
+
+/** DROP DOWN BUTTONS ***/
+.dropdown-btns{
+    border-radius: 7.5px;
+    border:1px solid #DFD9D9 ;
+    width: fit-content;
+    padding: 5px 2px;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-button {
+    border-radius: 7.5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.dropdown-button .chev{
+    color: #DFD9D9;
+    font-size: 0rem !important;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    min-width: 160px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+
+}
+
+.dropdown-content a {
+    font-size: 0.9rem;
+    color: #454545;
+    padding: 5px 14px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #F7F7F7;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropdown-button {
+    background-color: #F7F7F7;
+}

@@ -20,6 +20,7 @@ class ReviewSentiment:
         clean = word.lower().translate(self.LEET_MAP)
         clean = re.sub(r'[^a-z\s]', '', clean)
         return clean
+    
     def check_clean_liness(self, word):
         word = self.normalize_text(word)
         if word in lines:

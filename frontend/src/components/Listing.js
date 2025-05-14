@@ -1,13 +1,12 @@
-import {React} from "react";
-import sample from  "../styles/img/q.jpg"
-import { Link } from "react-router-dom";
-function Listing() {
+import {React, useEffect} from "react";
+
+function Listing({listing, onClickCard}) {
   return (
     <div className="card_">
-      <Link to={"/listing/23"}>
+      <div onClick={()=>{onClickCard(listing.listing_id)}}>
         <div className="position-relative card_img">
           <img 
-            src = {sample}
+            src = {`${process.env.REACT_APP_API_ADDRESS}/get/image/${listing.images}`}
             className="card-img-top" 
             alt="Room" 
           />
@@ -17,23 +16,23 @@ function Listing() {
         </div>
 
         <div className="card-body p-2">
-          <h6 className="card-title mb-1">Orange House, Shashi</h6>
+          <h6 className="card-title mb-1">{listing.name}, {listing.location}</h6>
           <p className="card-text text-muted mb-1">
-            Hosted by Lucinda & Petrus
+            Hosted by {listing.hosted_by}
           </p>
           <p className="card-text text-muted mb-2">
-          15 Students
+          {listing.total_students} Students
           </p>
           <div className="d-flex justify-content-between align-items-center">
             <small>
-              <strong className = "card-price">$75 /m</strong> 
+              <strong className = "card-price">${listing.rent} /m</strong> 
             </small>
             <small className="d-flex align-items-center">
-              <span className="bi bi-star-fill text-dark me-1" ></span> 4.85
+              <span className="bi bi-star-fill text-dark me-1" >{listing.rating}</span> 
             </small>
           </div>
         </div>
-      </Link>   
+      </div>   
     </div>
   );
 }

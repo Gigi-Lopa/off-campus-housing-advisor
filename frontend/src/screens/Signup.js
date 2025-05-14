@@ -36,7 +36,7 @@ function Signup() {
         }
 
         if (["client", "host"].includes(parameters.mode)){
-            fetch(`http://192.168.18.172:5000/signup/${parameters.mode}`, {
+            fetch(`${process.env.REACT_APP_API_ADDRESS}/signup/${parameters.mode}`, {
                 method : "POST",
                 headers : {
                     "Content-Type": "application/json"

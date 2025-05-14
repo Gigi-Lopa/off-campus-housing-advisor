@@ -4,7 +4,8 @@ function AddListingModal({close_modal, onSave}) {
     let [gen_form, set_gen_form] = useState({
         b_name : "",
         b_address : "",
-        b_price : "",
+        b_location : "Shashi",
+        b_rent : "",
         b_desc : "",
         b_orientation : {
             mixed : true,
@@ -41,7 +42,7 @@ function AddListingModal({close_modal, onSave}) {
 
         /* DATA */
         let data = gen_form
-        data.rooms = b_rooms
+        data.b_rooms = b_rooms
         onSave(data)
     }
 
@@ -79,14 +80,21 @@ function AddListingModal({close_modal, onSave}) {
                         </div>
                     </div>
                     <div className='form-group col-md-12'>
+                        <label className=''>Location</label>
+                        <select className='input_bar' name='b_location' value={gen_form.b_location} onChange={onHandleChange}>
+                            <option value={"Shashi"} selected>Shashi</option>
+                            <option value={"Chipadze"}>Chipadze</option>
+                            <option value={"Chiwaridzo"}>Chiwaridzo</option>
+                        </select>
+                    </div>
+                    <div className='form-group col-md-12'>
                         <label>Rent</label>
                         <input
-                            name={"b_price"}
-                            value={gen_form.b_price}
+                            name={"b_rent"}
+                            value={gen_form.b_rent}
                             onChange={onHandleChange}
                             className={"input_bar"}
                             required
-
                         />
                     </div> 
                     <div className='form-group col-md-12'>
@@ -151,7 +159,7 @@ function AddListingModal({close_modal, onSave}) {
                                     className={"input_bar"}
                               />
                             </div>
-                            <button className='btn btn-ha-primary' type='button' onClick={()=>{set_b_rooms(prev=>[...prev, c_no]);set_c_no("")}}>
+                            <button className='btn btn-ha-primary' type='button' onClick={()=>{c_no !== 0 && set_b_rooms(prev=>[...prev, c_no]);set_c_no("")}}>
                                 <Check/>
                             </button>
                         </div>

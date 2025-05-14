@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import {X} from 'lucide-react'
 
-function AddImagesModal({close_modal, onSave}) {
+function AddImagesModal({close_modal, onSave, status}) {
     let [images, set_images] = useState({
         bedroom  : null,
         kitchen : null,
         toilet : null,
-        dining_area : null,
+        dining_room : null,
         exterior :null
     })
 
@@ -70,7 +70,7 @@ function AddImagesModal({close_modal, onSave}) {
                 <input
                     type='file'
                     accept='.png, .jpg, .jpeg'
-                    name={"dining_area"}
+                    name={"dining_room"}
                     onChange={handleChange}
                     className={"input_bar"}
                 />
@@ -88,6 +88,24 @@ function AddImagesModal({close_modal, onSave}) {
                 />
                 
             </div> 
+            {
+                status.error &&
+                <div className='alert alert-danger'>
+                    An error occured.
+                </div>
+            }
+            {
+                status.isExist && 
+                <div className='alert alert-warning'>
+                    Listing name already exists
+                </div>
+            }
+            {
+                status.success &&
+                <div className='alert alert-success'>
+                    Listing Add
+                </div>
+            }
             <div className='save-container'>
                 <button className='btn btn-ha-primary' type='submit'>Register House </button>
             </div>
