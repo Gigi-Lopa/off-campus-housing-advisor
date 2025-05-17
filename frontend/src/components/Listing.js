@@ -28,7 +28,7 @@ function Listing({listing, onClickCard}) {
               <strong className = "card-price">${listing.rent} /m</strong> 
             </small>
             <small className="d-flex align-items-center">
-              <span className="bi bi-star-fill text-dark me-1" >{listing.rating}</span> 
+              <span style = {{marginLeft : "5px"}} className="bi bi-star-fill text-dark me-1" >{listing.average_rating}</span> 
             </small>
           </div>
         </div>

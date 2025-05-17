@@ -1,12 +1,74 @@
-import React from 'react'
-import sample from "../styles/img/q.jpg"
+import React, {useRef, useState} from 'react'
+import loader from "../styles/img/white_loader.svg"
 import Review from './Review'
 import OtherListing from './OtherListing'
 import ReviewCount from './ReviewCount'
 import SERVICES from './Services'
+import { useNavigate } from 'react-router-dom'
+import Cookie from "js-cookie"
 
+function ListingInfo({listing_info, other_info, listing_id}) {
+    const totalStars = 5
+    let navigate = useNavigate();
+    let client_id = useRef();
+    let [review_text, set_review_text] = useState("");
+    const [rating, setRating] = useState(0);
+    const [hover, setHover] = useState(null)
+    let [disable, set_disabled] = useState(!true)
+    let [status, set_status] = useState({
+        error: false,
+        success : false,
+        profanity : false
+    })
 
-function ListingInfo({listing_info, other_info}) {
+    let onSubmitReview = () =>{
+        let token = Cookie.get("client_token")
+        if(!token){
+            navigate(`/login/client`)
+        } else{
+            client_id.current = token
+        }
+
+        if (rating === 0 && review_text === "") {
+            return
+        }
+
+        fetch(`${process.env.REACT_APP_API_ADDRESS}/add/review`,{
+            method : "POST",
+            headers : {
+                "Content-Type" : "application/json",
+            }, 
+            body : JSON.stringify({
+                "host_id" : listing_info.host_id,
+                "client_id" : client_id.current,
+                "listing_id" : listing_id,
+                "rating" : rating,
+                "review": review_text
+            })
+        })
+        .then(response => response.json())
+        .then(response =>{
+            if(response.isProfanity){
+                set_status(prev=>({profanity : true, error: false, success:false}))
+                return
+            }
+            if (response.isError) {
+                set_status(prev=>({profanity : false,success:false, error : true}))
+            }
+            set_status(prev=>({...prev, success : true}))
+        })
+        .catch(error=>{
+            console.log(error);
+            set_status(prev=>({profanity : false,success:false, error : true}))
+        })
+        .finally(()=>{
+            set_status(prev=>({profanity : false,success:false, error : true}))
+            setTimeout(()=>{
+                set_status(prev=>({profanity : false,success:false, error : true}))
+            }, 3500)
+        })
+    }
+
     return (
     <div className='w100 listing-info'>
         <div className='container'>
@@ -126,7 +188,7 @@ function ListingInfo({listing_info, other_info}) {
                                             key={index}
                                         >
                                             {SERVICES[service.replace(/ /g, "_").toLowerCase()].icon}   
-                                            <span className="service-tag">{service}</span>
+                                            <span className="service-tag">{service.replace(/_/g, " ")}</span>
                                         </div>
                                         )
                                     })
@@ -145,8 +207,76 @@ function ListingInfo({listing_info, other_info}) {
                         <Review/>
                         <Review/>
                         <Review/>
-                        <Review/>
+                        <Review/>  
                     </div>
+                    <div className="review-section">
+                        <div className='flex flex_col center'>
+                            <h4>Leave {other_info.host_name} a Review</h4>
+                            <div className='stars '>
+                                <div style={{ display: 'flex', gap: '5px', cursor: 'pointer' }}>
+                                    {Array.from({ length: totalStars }, (_, i) => i + 1).map((star) => (
+                                        <span
+                                        key={star}
+                                        onClick={() => {
+                                            setRating(star);
+                                           
+                                        }}
+                                        onMouseEnter={() => setHover(star)}
+                                        onMouseLeave={() => setHover(null)}
+                                        style={{
+                                            color: (hover || rating) >= star ? '#ffc107' : '#6A6A7D',
+                                            fontSize: '1.5rem'
+                                        }}
+                                        >
+                                        ★
+                                        </span>
+                                    ))}
+                                </div>     
+                        </div>
+                        
+                        </div>
+                        <div className='form-group'>
+                            <textarea 
+                                className='input_bar'
+                                rows={8}
+                                style={{marginTop :"15px"}}
+                                placeholder='Enter you review here ....'
+                                value={review_text}
+                                onChange={(e) => set_review_text(e.target.value)}
+                            >    
+                            </textarea>
+                        </div>
+                        {
+                            status.error &&
+                            <div className='alert alert-danger'>
+                                An error occured
+                            </div>
+                        }
+                        {
+                            status.profanity && 
+                            <div className='alert alert-warning'>
+                                Profanity is not allowed
+                            </div>
+                        }
+                        {
+                            status.success &&
+                            <div className='alert alert-success'>
+                                Review submitted successfully
+                            </div>
+                        }
+                        <div className='flex flex_col align-end'>
+                            <button className='btn btn-ha-primary' disabled= {disable} onClick={onSubmitReview}>
+                                {
+                                    disable ? (
+                                        <img src={loader} alt='loader' className='loader-btn'/>
+                                    ) : (
+                                        "Submit"
+                                    )
+                                }
+                            </button>
+                        </div>
+                       
+                    </div>   
                 </div>
             </div>
         </div>

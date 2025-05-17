@@ -1,6 +1,6 @@
 from googletrans import Translator
 import asyncio
-from lines import lines
+from components.lines import lines
 from transformers import pipeline
 from langdetect import detect
 import re
@@ -26,6 +26,17 @@ class ReviewSentiment:
         if word in lines:
             return 1
         return 0
+    
+    def classify_review(self,label):
+        print(label)
+        stars = int(label[0].split(" ")[0])
+        if stars <= 2:
+            return "Hated"
+        elif stars == 3:
+            return "Good"
+        else:
+            return "Perfect"
+        
     def get_sentiment(self, review):
         words = review.lower().split(" ")
         for word in words:
@@ -39,10 +50,11 @@ class ReviewSentiment:
             english_review = review
 
         sentiment = self.sentiment_pipeline(english_review)
+        review_score = self.classify_review(sentiment[0]["label"])
+        
         return {
             "original_shona": review,
             "translated_english": english_review,
-            "sentiment": sentiment
+            "review_score": review_score, 
+            "sentiment": sentiment,            
         }
-review_sentiment = ReviewSentiment() 
-print(review_sentiment.get_sentiment("Was a kind hearted person. His patient with you and everyone"))

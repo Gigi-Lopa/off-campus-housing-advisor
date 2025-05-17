@@ -35,7 +35,6 @@ function Signin() {
         })
         .then(response=> response.json())
         .then(response=>{
-            console.log(response)
             if(response.isEmail === response.isPassword){
                 Cookie.set(parameters.mode === "client" ? "client_token" : "host_token", response.user_id, {expires: 7})
                 let link = parameters.mode === "client" ? "/" : `/host/${response.user_id}`

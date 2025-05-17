@@ -62,7 +62,7 @@ function Signup() {
                         error : true
                     }))
                 } else{
-                    Cookie.set(parameters.mode === "client" ? "client_token" : "host_token", response.user_id, {expires: 7})
+                    Cookie.set(parameters.mode === "client" ? "client_token" : "host_token",response.user_id, {expires: 7})
                     let link = parameters.mode === "client" ? "/" : `/host/${response.user_id}`
                     navigate(link, {replace : true})
                 }

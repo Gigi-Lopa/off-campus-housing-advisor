@@ -7,8 +7,10 @@ import AddListingModal from '../components/AddListingModal'
 import AddServiceModal from '../components/AddServiceModal'
 import AddImagesModal from '../components/AddImagesModal'
 import Cookie from "js-cookie"
+import { useNavigate } from 'react-router-dom'
 
 function Host() {
+    let navigate = useNavigate()
     let [add_listing, set_add_listing] = useState(false)
     let [add_services, set_add_services] = useState(false)
     let [add_images, set_images] = useState(false)
@@ -19,9 +21,11 @@ function Host() {
 
 
     useEffect(()=>{
-        let token_ = Cookie.get("host_token")
-        if(token){
-            token.current = token_
+        let token_ = Cookie.get("host_token");
+        if(token_){   
+            token.current = token_      
+        } else{
+            navigate("/login/host", {replace: true})
         }
     },[])
 

@@ -43,7 +43,7 @@ function ListingScreen() {
         <Nav/>
         {
           listing_info && !status.isLoading ? (
-            <ListingInfo listing_info={listing_info} other_info={other_info}/>
+            <ListingInfo listing_info={listing_info} listing_id = {params.id} other_info={other_info}/>
           ) : (
             <div>Loading...</div>
           )

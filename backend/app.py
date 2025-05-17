@@ -5,24 +5,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from datetime import datetime
 from bson import ObjectId
+from components.utils import ReviewSentiment
 import pytz
 import os
 import json
-
 
 app = Flask(__name__)
 CORS(app)
 api = Api(app=app)
 client = MongoClient("mongodb://localhost:27017/")
+review_sentiment = ReviewSentiment() 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-cat_tz = pytz.timezone('Africa/Nairobi')
+cat_tz = pytz.timezone('Africa/Harare')
 
 #DATABASE MANAGEMENT
 database = client.accomodation_finder
 clients_collections = database.clients
 hosts_collections = database.hosters
 listing_collection = database.listings
+reviews_collection = database.reviews
 
 class RegisterUser(Resource):
     def post(self, mode):
@@ -57,6 +59,7 @@ class RegisterUser(Resource):
         return {
             "message" : "Account created.", 
             "isAccount" : True,
+            "fullname" : fullname,
             "user_id" : str(user.inserted_id)
         }, 201 
 
@@ -89,6 +92,7 @@ class LoginUser(Resource):
             "message" : "Account logged in",
             "isEmail" : True,
             "isPassword" : True,
+            "fullname" : user["fullname"],
             "user_id" : str(user["_id"])
         }, 201
 
@@ -141,13 +145,14 @@ class Listing(Resource):
             "name" : general_info.get("b_name"),
             "location" : general_info.get("b_location"),
             "address"  : general_info.get("b_address"),
-            "rent" : general_info.get("b_rent"),
+            "rent" : float(general_info.get("b_rent")),
             "description" : general_info.get("b_desc"),
             "orientation" : general_info.get("b_orientation"),
             "gender" : general_info.get("b_gender"),
             "rooms" : general_info.get("b_rooms"),
             "services" : services,
-            "images" : file_names
+            "images" : file_names,
+            "average_rating" : 1.0
         })
         if listing.inserted_id:
             BEDROOM.save(bedroom_fp)
@@ -188,10 +193,11 @@ class Listings(Resource):
                 "gender": listing["gender"],
                 "total_students": total_students,
                 "images": listing["images"]["BEDROOM"],
-                "rating": listing.get("rating", 0) or 0
+                "rating": listing.get("rating", 0) or 0,
+                "average_rating": listing.get("average_rating", 0) or 0
             })
-
         return data
+    
     def get(self):
         page = int(request.args.get("page", 1))
         location = request.args.get("location")
@@ -203,40 +209,27 @@ class Listings(Resource):
 
         match_query = {}
         if location:
-            match_query["location"] = location
+            if location != "All Locations":
+                match_query["location"] = location
+
         if rating:
-            match_query["rating"] = rating
-        if rent:
-            match_query["rent"] = {"$gte": int(rent), "$lte": int(rent) + 10}
-
-        matched = list(listing_collection.find(match_query).limit(limit))
-        matched_count = len(matched)
-
-        if matched_count < limit:
-            unmatched_limit = limit - matched_count
-
-            unmatched_query = {
-                "$or": []
+            rating_map  = {
+                "Best" : {"$gte" : 3.1 , "$lte" : 5},
+                "Average" : {"$gte" : 2 , "$lte" : 2.9},
+                "Worst"  :{"$gte" : 1 , "$lte" : 1.99}
             }
-            if location:
-                unmatched_query["$or"].append({"location": {"$ne": location}})
-            if rating:
-                unmatched_query["$or"].append({"rating": {"$ne": rating}})
-            if rent:
-                unmatched_query["$or"].append({"rent": {"$lt": int(rent)}})
-                unmatched_query["$or"].append({"rent": {"$gt": int(rent) + 10}})
-            if unmatched_query["$or"]:
-                unmatched = list(listing_collection.find(unmatched_query).limit(unmatched_limit))
+            match_query["average_rating"] = rating_map[rating]
+        if rent:
+            rent = float(rent)
+            if rent <= 60:
+                match_query["rent"] = {"$gte": 0, "$lte" : 69}
             else:
-                unmatched = []
-        else:
-            unmatched = []
+                match_query["rent"] = {"$gte": rent - 10, "$lte": rent}
 
-        combined = matched + unmatched
-
+        matched = list(listing_collection.find(match_query).skip(skip).limit(limit))
         total = listing_collection.count_documents({})   
+        listings = self.trim_data(matched)
 
-        listings = self.trim_data(combined)
         pagination = {
             "page": page,
             "limit": limit,
@@ -251,7 +244,7 @@ class Listings(Resource):
             "pagination": pagination,
             "data": listings
         }, 200
-
+        
 class Images(Resource):
     def get(self, image_name):
         image_path = os.path.join("uploads", image_name)
@@ -266,7 +259,6 @@ class GetListing(Listings):
         if listing is None:
             return {"message": "Listing not found"}, 404
 
-        # Clean ObjectId fields for JSON
         listing["listing_id"] = str(listing.pop("_id"))
         listing["host_id"] = str(listing["host_id"])
 
@@ -287,6 +279,100 @@ class GetListing(Listings):
             "host_name": host_name,
             "status": True
         }, 200
+class Reviews(Listing):
+    def set_rating(self, listing_id):
+        all_reviews = list(reviews_collection.find({"listing_id": str(listing_id)}, {"_id": 0, "rating": 1}))
+        total_reviews = len(all_reviews)
+
+        if total_reviews == 0:
+            average = 0
+        else:
+            total_rating = sum(float(review["rating"]) for review in all_reviews)
+            average = total_rating / total_reviews
+
+        listing_collection.find_one_and_update(
+            {"_id": listing_id},
+            {"$set": {"average_rating": average}}
+        )
+
+    def post(self):
+        data = request.get_json()
+        client_id = ObjectId(data["client_id"])
+        listing_id = ObjectId(data["listing_id"])
+
+        if not client_id and not listing_id:
+            return {
+                "message": "User ID and listing ID are required",
+                "isError" : True
+            }, 400
+        
+        sentiment = review_sentiment.get_sentiment(data['review'])
+        if sentiment == "dirty":
+            return {
+                "isProfanity" : True,
+                "Message" : "Profanity found in review",
+            }, 200
+        
+        client = clients_collections.find_one({"_id" : client_id})
+        review = reviews_collection.insert_one({
+            "client_id" : data["client_id"],
+            "listing_id"  :data["listing_id"],
+            "host_id" : data["host_id"],
+            "client_name" : client.get("fullname"),
+            "review" : data["review"],
+            "rating" : data["rating"],
+            "review_score" : sentiment["review_score"],
+            "sentiment": sentiment["sentiment"][0],
+             "created_at": datetime.now(cat_tz)  
+        })
+        self.set_rating(data["listing_id"], data["rating"])
+        if review.inserted_id:
+            self.set_rating(listing_id)
+            return {
+                "message"  : "Review submitted successfully",
+                "isSuccess" : True
+            },200 
+        return {"message": "An error occured", "isError" : True},400 
+    
+    def get(self):
+        page = int(request.args.get("page", 1))
+        host_id = request.args.get("host_id", None)
+        listing_id = request.args.get("listing_id", None)
+        if not host_id and not listing_id:
+            return {
+                "message": "Host and Listing required"
+            }, 404
+
+        reviews_trimmed = []
+        limit = 10
+        skip = (page - 1) * limit
+        total = reviews_collection.count_documents({
+        "host_id": host_id,
+        "listing_id": listing_id})
+        next_page = page + 1 if skip + limit < total else None
+        
+        reviews = list(reviews_collection.find({
+            "host_id" : host_id,
+            "listing_id" : listing_id
+        }, {"review": 1, "rating": 1, "client_name": 1, "review_score": 1})
+        .sort("created_at", -1)
+        .skip(skip)
+        .limit(10))
+
+        for review in reviews:
+            reviews_trimmed.append({
+                "review_id" : str(review["_id"]),
+                "review_score" : review["review_score"],
+                "review" : review["review"],
+                "rating" : review["rating"],
+                "client_name" : review["client_name"],
+            })
+
+        return {
+            "reviews" : reviews_trimmed,
+            "next" : next_page,
+            "message" :"Reviews retrieved successfully"
+        }, 200
 
 api.add_resource(RegisterUser, "/signup/<string:mode>")
 api.add_resource(LoginUser, "/signin/<string:mode>")
@@ -294,6 +380,7 @@ api.add_resource(Listing, "/add/listing")
 api.add_resource(Listings, "/get/listings")
 api.add_resource(Images, "/get/image/<string:image_name>")
 api.add_resource(GetListing, "/get/listing/<string:id>")
+api.add_resource(Reviews, "/review")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -103,7 +103,7 @@ function AddImagesModal({close_modal, onSave, status}) {
             {
                 status.success &&
                 <div className='alert alert-success'>
-                    Listing Add
+                    Listing created successfully
                 </div>
             }
             <div className='save-container'>

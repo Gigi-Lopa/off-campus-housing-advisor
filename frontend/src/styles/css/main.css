@@ -20,7 +20,9 @@
 .justify-end{
     justify-content: end;
 }
-
+.align-end{
+    align-items: flex-end;
+}
 /*** NAV BAR ****/ 
 .navbar{
     position: fixed;
@@ -150,7 +152,10 @@
 }
 .listings{
     padding-top: 160px;
-} 
+}
+.filters-tab{
+    margin-bottom: 25px;
+}
 .filters-tab:first-child{
     align-content: center;
 }
@@ -160,6 +165,21 @@
     font-weight: 500;
     line-height: 30px;
     color: rgb(34, 34, 34);
+}
+.nothing{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    width: 100%;
+}
+.nothing span{
+    color: #5e2ced;
+    font-size: 0.9rem;
+}
+.alert {
+    font-size: 0.9rem !important;
+    
 }
 /**** Card ***/
 .card_{
@@ -350,6 +370,9 @@
 .listing-services .col-md-6{
     margin-bottom: 15px ;
 }
+.review-section{
+    margin-top: 50px;
+}
 .review img{
     width: 35px;
     height: 35px;
@@ -526,9 +549,19 @@ form label{
 .input_9{
     width: 90%;
 }
+.btn-outline-ha-primary{
+    border: 1px solid #5e2ced;
+    color: #5e2ced;
+    width: fit-content;
+}
+.btn-outline-ha-primary:hover{
+    background-color: #5e2ced;
+    color: white;
+}
 .btn-ha-primary{
     background-color: #5e2ced;
     color: white;
+    width: fit-content;
 }
 .btn-ha-primary:hover{
     background-color: #260c6d;
@@ -660,19 +693,25 @@ form label{
     min-width: 160px;
     box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
     z-index: 1;
-
+    padding: 10px;
 }
 
-.dropdown-content a {
+.dropdown-content button {
     font-size: 0.9rem;
+    border-radius: 7.5px;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: #F7F7F7;
     color: #454545;
     padding: 5px 14px;
     text-decoration: none;
     display: block;
+    border: none;
+    outline: none;
 }
 
-.dropdown-content a:hover {
-    background-color: #F7F7F7;
+.dropdown-content button:hover {
+    background-color: #F8f8f8;
 }
 
 .dropdown:hover .dropdown-content {

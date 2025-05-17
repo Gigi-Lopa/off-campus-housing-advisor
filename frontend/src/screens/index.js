@@ -12,12 +12,23 @@ function Index() {
   let [render, _set_render] = useState(false)
   
   useEffect(()=>{
-    let token = Cookie.get("hot_token")
-    if(token){
-      navigate(`/host/${token}`)
-    } else{
-      _set_render(true)
+   let token = Cookie.get("hot_token");
+    if (token) {
+      try {
+        const parsed = JSON.parse(token);
+        if (parsed._id) {
+          navigate(`/host/${parsed._id}`);
+        } else {
+          _set_render(true);
+        }
+      } catch (err) {
+        console.error("Invalid token format:", err);
+        _set_render(true);
+      }
+    } else {
+      _set_render(true);
     }
+
   }, [])
 
   return (
