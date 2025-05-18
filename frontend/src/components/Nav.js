@@ -1,21 +1,26 @@
-import React, {useEffect, useState } from 'react'
+import React, {useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Cookie from "js-cookie"
 
 function Nav() {
     let navigate = useNavigate()
     let [search_value, set_search_value] = useState("")
-    let [token , set_token] =  useState(null)
+    let [token, setToken] = useState(null);
+    let [clientName, setClientName] = useState(null);
 
-    useEffect(()=>{
-        let token = Cookie.get("client_token");
-        if(token){
-            set_token(token)
+    useEffect(() => {
+        const token_ = Cookie.get("client_token");
+        const name = Cookie.get("client_fullname");
+
+        if (token_ && name) {
+            setToken(token_);
+            setClientName(name);
         }
-    }, [])
+    }, []);
 
     let log_out = ()=>{
         Cookie.remove("client_token");
+        Cookie.remove("client_fullname")
         window.location.reload()
     }
     
@@ -36,9 +41,17 @@ function Nav() {
                 </div>
                 <div className='col nav-links flex justify-end'>
                     <ul className='flex flex_row'>
-                        <li className='link-btn'>
-                            <Link className='nav-link' to={"/login/host"}>Host Management</Link>
-                        </li>
+                        {
+                            clientName ?
+                            (
+                                <span>Welcome back, {clientName}</span>
+                            ):
+                            (
+                                <li className='link-btn'>
+                                    <Link className='nav-link' to={"/login/host"}>Host Management</Link>
+                                </li>
+                            )
+                        }
                         <li className='profile-links shadow-sm'>
                             <div className='flex flex_row profile-badge'>
                                 <span className='bi bi-list'> </span>
@@ -54,7 +67,7 @@ function Nav() {
                                         </>
                                     ) : (
                                         <>
-                                             <Link to = {`/profile/${token}`}>Profile</Link>
+                                             <Link to = {`/profile/${token.current}`}>Profile</Link>
                                              <Link to = "" onClick={log_out}>Log out</Link>
                                         </>
                                     )

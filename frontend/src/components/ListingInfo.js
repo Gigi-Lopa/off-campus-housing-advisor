@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import loader from "../styles/img/white_loader.svg"
 import Review from './Review'
 import OtherListing from './OtherListing'
@@ -14,11 +14,16 @@ function ListingInfo({listing_info, other_info, listing_id}) {
     let [review_text, set_review_text] = useState("");
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(null)
-    let [disable, set_disabled] = useState(!true)
+    let [disable, set_disabled] = useState(false)
+    let [reviews, set_reviews] = useState([])
+    let [review_page, set_review_page] = useState(1)
+    let [has_next, set_has_next] = useState(null)
+
     let [status, set_status] = useState({
         error: false,
         success : false,
-        profanity : false
+        profanity : false,
+        isRating : false
     })
 
     let onSubmitReview = () =>{
@@ -29,11 +34,13 @@ function ListingInfo({listing_info, other_info, listing_id}) {
             client_id.current = token
         }
 
-        if (rating === 0 && review_text === "") {
-            return
+        if (rating === 0 || review_text === "") {
+            set_status((prev)=>({...prev, isRating : true}))
+            setTimeout(() => {set_status((prev)=>({...prev, isRating : false}))}, 3500);
+            return;
         }
-
-        fetch(`${process.env.REACT_APP_API_ADDRESS}/add/review`,{
+        set_disabled(true)
+        fetch(`${process.env.REACT_APP_API_ADDRESS}/review`,{
             method : "POST",
             headers : {
                 "Content-Type" : "application/json",
@@ -41,40 +48,63 @@ function ListingInfo({listing_info, other_info, listing_id}) {
             body : JSON.stringify({
                 "host_id" : listing_info.host_id,
                 "client_id" : client_id.current,
-                "listing_id" : listing_id,
+                "listing_id" : listing_info.listing_id,
                 "rating" : rating,
                 "review": review_text
             })
         })
         .then(response => response.json())
         .then(response =>{
+            console.log(response)
             if(response.isProfanity){
                 set_status(prev=>({profanity : true, error: false, success:false}))
-                return
+                return;
             }
             if (response.isError) {
                 set_status(prev=>({profanity : false,success:false, error : true}))
+                return;
             }
+        
             set_status(prev=>({...prev, success : true}))
+            get_reviews(true)
         })
         .catch(error=>{
             console.log(error);
             set_status(prev=>({profanity : false,success:false, error : true}))
         })
         .finally(()=>{
-            set_status(prev=>({profanity : false,success:false, error : true}))
+            set_disabled(false);
             setTimeout(()=>{
-                set_status(prev=>({profanity : false,success:false, error : true}))
+                set_status(prev=>({profanity : false,success:false, error : false, isRating :false}))
             }, 3500)
         })
     }
+    let get_reviews = (isReset)=>{
+        fetch(`${process.env.REACT_APP_API_ADDRESS}/review?page=${review_page}&&host_id=${listing_info.host_id}&&listing_id=${listing_info.listing_id}`, {method:"GET"})
+        .then(response=> response.json())
+        .then(response =>{
+            
+            if(response.isExist){
+                if(isReset){
+                    set_reviews(response.reviews)
+                } else {
+                    set_reviews(prev=>[...prev, ...response.reviews])
+                }
+                set_review_page(response.next ? response.next : review_page)
+                set_has_next(response.next)
+            }
+        })
+    }
+    useEffect(()=>{
+        get_reviews(true);
+    }, [])
 
     return (
     <div className='w100 listing-info'>
         <div className='container'>
             <div className='listing-header'>
                 <h4>{listing_info.address}, {listing_info.location}</h4>
-                <ReviewCount/>
+                <ReviewCount positive={other_info.review_counts.positive} negative={other_info.review_counts.negative}/>
             </div>
             <div className='listing-images'>          
                 <div className="row g-2">
@@ -132,15 +162,21 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                                         </span>
                                     </div>
                                     <div className='col flex flex_col center'>
-                                            <span className='rating'>{listing_info.rating}</span>
-                                            <div className='stars flex fle-row'>
-                                                <span className='bi bi-star-fill'></span>
-                                                <span className='bi bi-star-fill'></span>
-                                                <span className='bi bi-star-fill'></span>
-                                                <span className='bi bi-star-fill'></span>
-                                                <span className='bi bi-star-fill'></span>
-
+                                            <span className='rating'>{listing_info.average_rating}</span>
+                                            <div className='flex flex_row'>
+                                                     {Array.from({ length: 5 }, (_, i) => i + 1).map((star) => (
+                                                        <span
+                                                        key={star}
+                                                        style={{
+                                                            color: (Math.round(listing_info.average_rating)) >= star ? '#ffc107' : '#6A6A7D',
+                                                            fontSize: '1rem'
+                                                        }}
+                                                        >
+                                                        ★
+                                                        </span>
+                                                    ))}
                                             </div>
+                                           
                                     </div>
                                 </div>
                             </div>
@@ -163,7 +199,7 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                             </p>
                         </div>
                         {
-                            other_info.other_listings === 0  &&
+                            other_info.other_listings.length !== 0  &&
                              <div className='other-listings bd-b'>
                                 <h4>{other_info.host_name} Listing's</h4>
                                 <div className='row'>
@@ -198,17 +234,35 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                     </div>
                     <div className='col-md-4'>
                         <h4>{other_info.host_name} Listings</h4>
-                       
                     </div>
                 </div>
                 <div className='listing-reviews bd-t'>
-                    <h4>Reviews</h4>
-                    <div className='row'>
-                        <Review/>
-                        <Review/>
-                        <Review/>
-                        <Review/>  
-                    </div>
+                     {
+                        reviews.length !== 0 &&
+                        <>
+                        <h4>Reviews</h4>
+                        <div className='row'>
+                            {
+                                reviews.map(review=>{
+                                    return (
+                                        <Review review ={review} key={review.review_id}/>  
+                                    )
+                                })
+                            }
+                        </div>
+                        <br/>
+                        <br/>
+                        <div  className='flex flex_row center'>
+                            <button className='btn btn-outline-ha-primary' disable = {isNaN(review_page)} onClick={()=>{
+                                if(has_next){
+                                    get_reviews(false)
+                                }
+                            }} >
+                                Show More
+                            </button>   
+                        </div>   
+                        </>
+                    }
                     <div className="review-section">
                         <div className='flex flex_col center'>
                             <h4>Leave {other_info.host_name} a Review</h4>
@@ -253,6 +307,12 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                             </div>
                         }
                         {
+                            status.isRating &&
+                            <div className='alert alert-danger'>
+                                Rating is required
+                            </div>
+                        }
+                        {
                             status.profanity && 
                             <div className='alert alert-warning'>
                                 Profanity is not allowed
@@ -268,7 +328,7 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                             <button className='btn btn-ha-primary' disabled= {disable} onClick={onSubmitReview}>
                                 {
                                     disable ? (
-                                        <img src={loader} alt='loader' className='loader-btn'/>
+                                       "Submitting ..."
                                     ) : (
                                         "Submit"
                                     )

@@ -133,10 +133,11 @@ function Host() {
                                     <ReviewCount/>
                                 </div>
                                 <div className='row' style={{marginTop:"25px"}}>
-                                        <Review/>
-                                        <Review/>
-                                        <Review/>
-                                        <Review/>
+                                   {/*  
+                                   <Review/>
+                                    <Review/>
+                                    <Review/>
+                                     */}
                                 </div>
                             </div>
                         </div>

@@ -25,6 +25,7 @@ function ListingScreen() {
             }
             set_listing_info(response.listing)
             set_other_info({
+              "review_counts" : response.review_counts,
               "host_name" : response.host_name,
               "other_listings" : response.other_listings
             })

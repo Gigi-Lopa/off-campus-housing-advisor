@@ -174,7 +174,6 @@ class Listing(Resource):
 class Listings(Resource):   
     def trim_data(self, listings):
         data = []
-      
         for listing in listings:
             total_students = 0
             host_ = hosts_collections.find_one({"_id": ObjectId(listing["host_id"])}, {"_id" : 0})
@@ -208,6 +207,7 @@ class Listings(Resource):
         skip = (page - 1) * limit
 
         match_query = {}
+
         if location:
             if location != "All Locations":
                 match_query["location"] = location
@@ -219,6 +219,7 @@ class Listings(Resource):
                 "Worst"  :{"$gte" : 1 , "$lte" : 1.99}
             }
             match_query["average_rating"] = rating_map[rating]
+
         if rent:
             rent = float(rent)
             if rent <= 60:
@@ -264,6 +265,8 @@ class GetListing(Listings):
 
         host_ = hosts_collections.find_one({"_id": ObjectId(listing["host_id"])}, {"_id": 0})
         host_name = host_.get("fullname", "") if host_ else "Unknown"
+        negative_reviews = reviews_collection.count_documents({"listing_id" : str(id),"host_id" : listing["host_id"],"review_score" : "Hated",})
+        positive_reviews = reviews_collection.count_documents({"listing_id" : str(id),"host_id" : listing["host_id"],"review_score" : "Good",})
 
         other_listings_all = list(
             listing_collection.find({
@@ -274,6 +277,10 @@ class GetListing(Listings):
 
         other_listings = self.trim_data(other_listings_all)
         return {
+            "review_counts" : {
+                "positive" : positive_reviews,
+                "negative" : negative_reviews
+            },
             "listing": listing,
             "other_listings": other_listings,
             "host_name": host_name,
@@ -288,7 +295,7 @@ class Reviews(Listing):
             average = 0
         else:
             total_rating = sum(float(review["rating"]) for review in all_reviews)
-            average = total_rating / total_reviews
+            average = round((total_rating / total_reviews), 1)
 
         listing_collection.find_one_and_update(
             {"_id": listing_id},
@@ -325,13 +332,14 @@ class Reviews(Listing):
             "sentiment": sentiment["sentiment"][0],
              "created_at": datetime.now(cat_tz)  
         })
-        self.set_rating(data["listing_id"], data["rating"])
+        self.set_rating(data["listing_id"])
         if review.inserted_id:
             self.set_rating(listing_id)
             return {
                 "message"  : "Review submitted successfully",
                 "isSuccess" : True
             },200 
+       
         return {"message": "An error occured", "isError" : True},400 
     
     def get(self):
@@ -340,7 +348,8 @@ class Reviews(Listing):
         listing_id = request.args.get("listing_id", None)
         if not host_id and not listing_id:
             return {
-                "message": "Host and Listing required"
+                "message": "Host and Listing required",
+                "isExist" : False
             }, 404
 
         reviews_trimmed = []
@@ -369,10 +378,18 @@ class Reviews(Listing):
             })
 
         return {
+            "isExist" :True,
             "reviews" : reviews_trimmed,
             "next" : next_page,
             "message" :"Reviews retrieved successfully"
         }, 200
+
+class Hosts(Resource):
+    def get(self):
+        pass
+
+    def post(self):
+        pass
 
 api.add_resource(RegisterUser, "/signup/<string:mode>")
 api.add_resource(LoginUser, "/signin/<string:mode>")

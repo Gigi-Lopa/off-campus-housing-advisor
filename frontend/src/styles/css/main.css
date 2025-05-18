@@ -47,11 +47,19 @@
     font-size: 0.9rem;
 
 }
+
 .nav-links ul li{
     list-style-type: none;   
 }
 .nav-links ul li a{
     text-decoration: none;
+}
+.nav-links ul span{
+    align-self: center;
+    margin-right: 15px;
+    color: #454545;
+    font-size: 0.9rem;
+    font-family: "HF BD" !important;
 }
 .link-btn{
     margin-right: 15px ;
@@ -266,8 +274,16 @@
     object-fit: cover;
     height: 100%;
 }
-.listing-img-con{
-    position: relative;
+.listing-img-con {
+  position: relative;
+  aspect-ratio: 4 / 3; /* maintains shape */
+  overflow: hidden;
+}
+
+.listing-img-con img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
 }
 .listing-images .img-label{
     position: absolute;
@@ -382,6 +398,7 @@
 }
 .listing-reviews .review .review-name{
     font-weight: 600;
+    align-self: center;
 }
 .other-listings{
     margin-top: 50px;

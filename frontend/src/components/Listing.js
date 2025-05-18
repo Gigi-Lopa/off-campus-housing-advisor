@@ -10,9 +10,13 @@ function Listing({listing, onClickCard}) {
             className="card-img-top" 
             alt="Room" 
           />
-          <span className="badge bg-light text-dark position-absolute top-0 start-0 m-2 fw-bold guest-status">
-            Guest favorite
-          </span>
+          {
+            listing.average_rating >= 3 &&
+            <span className="badge bg-light text-dark position-absolute top-0 start-0 m-2 fw-bold guest-status">
+              Guest favorite
+            </span>
+          }
+          
         </div>
 
         <div className="card-body p-2">
@@ -28,7 +32,9 @@ function Listing({listing, onClickCard}) {
               <strong className = "card-price">${listing.rent} /m</strong> 
             </small>
             <small className="d-flex align-items-center">
-              <span style = {{marginLeft : "5px"}} className="bi bi-star-fill text-dark me-1" >{listing.average_rating}</span> 
+              <span  className="bi bi-star-fill text-dark me-1" >
+                {"      " + listing.average_rating}
+                </span> 
             </small>
           </div>
         </div>
