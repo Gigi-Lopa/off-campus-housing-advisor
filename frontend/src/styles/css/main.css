@@ -462,6 +462,13 @@
 .host .host-inf-bar .mail{
     font-size: 0.9rem;
 }
+.host .log-out-btn{
+    margin-top: 25px ;
+    color: #595959;
+    font-size: 0.8rem;
+    border: 1px solid #DFD9D9;
+    background-color: #F7F7F7;
+}
 .host .host-content .greeting{
     font-size: 1.5rem ;
     font-weight: 600;

@@ -4,6 +4,7 @@ from components.lines import lines
 from transformers import pipeline
 from langdetect import detect
 import re
+
 class ReviewSentiment:
     def __init__(self):
        self.sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
@@ -19,7 +20,7 @@ class ReviewSentiment:
     def normalize_text(self, word):
         clean = word.lower().translate(self.LEET_MAP)
         clean = re.sub(r'[^a-z\s]', '', clean)
-        return clean
+        return clean  
     
     def check_clean_liness(self, word):
         word = self.normalize_text(word)

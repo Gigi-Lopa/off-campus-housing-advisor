@@ -152,7 +152,7 @@ function ListingInfo({listing_info, other_info, listing_id}) {
                         </div>
                         <div className='listing-details-header'>
                             <div className='listing-rating'>
-                                <div className='row'>
+                                <div className='row'>-
                                     <div className='col flex center bd-r'>
                                         <span className='bi bi-award'></span>
                                     </div>

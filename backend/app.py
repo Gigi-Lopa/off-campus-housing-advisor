@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from datetime import datetime
 from bson import ObjectId
+from bson.errors import InvalidId
 from components.utils import ReviewSentiment
 import pytz
 import os
@@ -62,7 +63,7 @@ class RegisterUser(Resource):
             "fullname" : fullname,
             "user_id" : str(user.inserted_id)
         }, 201 
-
+  
 class LoginUser(Resource):
     def post(self, mode):
         if mode not in ["client", "host"]:
@@ -288,19 +289,27 @@ class GetListing(Listings):
         }, 200
 class Reviews(Listing):
     def set_rating(self, listing_id):
-        all_reviews = list(reviews_collection.find({"listing_id": str(listing_id)}, {"_id": 0, "rating": 1}))
+        all_reviews = list(reviews_collection.find(
+            {"listing_id": str(listing_id)},
+            {"_id": 0, "rating": 1}
+        ))
+
         total_reviews = len(all_reviews)
-
+        
         if total_reviews == 0:
-            average = 0
+            average = 0.0
         else:
-            total_rating = sum(float(review["rating"]) for review in all_reviews)
-            average = round((total_rating / total_reviews), 1)
-
+            try:
+                total_rating = sum(float(review.get("rating", 0)) for review in all_reviews)
+                average = round(total_rating / total_reviews, 1)
+            except (TypeError, ValueError):
+                average = 0.0  
+                
         listing_collection.find_one_and_update(
             {"_id": listing_id},
             {"$set": {"average_rating": average}}
         )
+
 
     def post(self):
         data = request.get_json()
@@ -383,14 +392,86 @@ class Reviews(Listing):
             "next" : next_page,
             "message" :"Reviews retrieved successfully"
         }, 200
+class HostReviews(Listings):
+    def pull_reviews(self, page, host_id):
+        limit = 10
+        skip = (page - 1) * limit
+        total = reviews_collection.count_documents({"host_id": host_id})
+        next_page = page + 1 if skip + limit < total else None
+        
+        
+        reviews = list(reviews_collection.find({
+            "host_id" : host_id,
+        }, {"review": 1,"listing_id" : 1,  "rating": 1, "client_name": 1, "review_score": 1, "_id" : 0})
+        .sort("created_at", -1)
+        .skip(skip)
+        .limit(10))
 
-class Hosts(Resource):
+        return reviews, next_page
+
     def get(self):
-        pass
+        page = int(request.args.get("page", 1))
+        host_id = request.args.get("id", None)
+        
+        if not host_id:
+            return {
+                "Message" : "Host ID required"
+            }, 404
+        
+        reviews, next_page = self.pull_reviews(page, host_id)
 
-    def post(self):
-        pass
+        return {
+            "status": True,
+            "next" : next_page,
+            "reviews" : reviews
+        }, 200
 
+class Host(HostReviews):
+    def get(self):
+        host_id = request.args.get("id", None)
+        page = int(request.args.get("page", 1))
+        
+        if not host_id:
+            return {
+                "Message" : "Host ID required"
+            }, 404
+        
+        try:
+            host = hosts_collections.find_one({"_id" : ObjectId(host_id)}, {"_id": 0, "fullname" : 1, "email" : 1})
+            if not host:
+                return {
+                    "Message" : "Host not found"
+                }, 404
+        except InvalidId as e:
+              return {
+                    "Message" : "Host not found"
+                }, 404
+        
+        listings = list(listing_collection.find({"host_id" :str(host_id)}))
+        negative_reviews = reviews_collection.count_documents({"host_id" : host_id,"review_score" : "Hated",})
+        positive_reviews = reviews_collection.count_documents({"host_id" : host_id,"review_score" : "Good",})
+ 
+        host_trimmed = {"fullname": host["fullname"], "emil" : host["email"]}
+        listings_trimmed = self.trim_data(listings)
+
+        reviews, next_page = self.pull_reviews(page, host_id)
+
+        return {
+            "status" : True,
+            "host" : {
+                "fullname": host["fullname"],
+                "email" : host["email"]
+            },
+            "listings" : listings_trimmed,
+            "reviews" : reviews,
+            "next" : next_page, 
+            "review_count"  : {
+                "positive" :positive_reviews,
+                "negative" : negative_reviews
+            }
+
+        }
+    
 api.add_resource(RegisterUser, "/signup/<string:mode>")
 api.add_resource(LoginUser, "/signin/<string:mode>")
 api.add_resource(Listing, "/add/listing")
@@ -398,6 +479,8 @@ api.add_resource(Listings, "/get/listings")
 api.add_resource(Images, "/get/image/<string:image_name>")
 api.add_resource(GetListing, "/get/listing/<string:id>")
 api.add_resource(Reviews, "/review")
+api.add_resource(Host, "/host")
+api.add_resource(HostReviews, "/host/reviews")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { use, useEffect, useRef, useState } from 'react'
 import OtherListing from '../components/OtherListing'
 import ReviewCount from '../components/ReviewCount'
 import Review from '../components/Review'
@@ -7,28 +7,64 @@ import AddListingModal from '../components/AddListingModal'
 import AddServiceModal from '../components/AddServiceModal'
 import AddImagesModal from '../components/AddImagesModal'
 import Cookie from "js-cookie"
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function Host() {
     let navigate = useNavigate()
+    let params = useParams();
     let [add_listing, set_add_listing] = useState(false)
     let [add_services, set_add_services] = useState(false)
     let [add_images, set_images] = useState(false)
     let [listing_info, set_listing_info] = useState({})
     let [uploading, set_uploading] = useState(false)
+    let [host_info, set_host_info] = useState(null)
+    let [review_page, set_review_page] = useState(1)
+    let [not_found, set_not_found] = useState(false)
     let [status, set_status] = useState({error : false, success : false, isExist : false})
     let token = useRef()
 
-
     useEffect(()=>{
         let token_ = Cookie.get("host_token");
-        if(token_){   
+        if(token_ && (token_ === params.id)){ 
             token.current = token_      
+            fetch(`${process.env.REACT_APP_API_ADDRESS}/host?page=${review_page}&&id=${params.id}`)
+            .then(response => response.json())
+            .then(response =>{
+                if(!response.status){
+                   return set_not_found(true); 
+                }
+                set_host_info({
+                    host : response.host,
+                    listings : response.listings,
+                    reviews : response.reviews,
+                    review_count : response.review_count,
+                    next : response.next
+                })
+            })
+            .catch(error =>{
+                console.log(error)
+            })
         } else{
             navigate("/login/host", {replace: true})
         }
     },[])
 
+    let get_reviews =()=>{
+        fetch(`${process.env.REACT_APP_API_ADDRESS}/host?page=${host_info.next}&&id=${params.id}`)
+        .then(response => response.json())
+        .then(response =>{
+            if(!response.status){
+                return alert("Server occured")
+            }
+
+          return set_host_info(prev => ({
+            ...prev,
+            next : response.next,
+            reviews: [...(prev?.reviews || []), ...response.reviews]
+        }));
+
+        })
+    }
     let addGenInfo = (data)=>{
         set_listing_info(prev=>({
             ...prev, 
@@ -91,6 +127,18 @@ function Host() {
             }, 3500);
         });
     };
+    if (not_found) {
+
+    return (
+        <div className='nothing'>
+        <span>Host Not Found</span>
+        </div>
+    );
+    }
+
+    if (!host_info) {
+    return null
+    }
 
   return (
     <div className='host'>
@@ -105,18 +153,25 @@ function Host() {
                             <div className='host-profile'>
                                 <span className='bi bi-person'></span>
                             </div>
-                            <span className='host-name'>Gilbert Lopah</span>
-                            <span className='tertiary-color mail'>gilbert2klopah@gmial.xom</span>
+                            <span className='host-name'>{host_info.host.fullname}</span>
+                            <span className='tertiary-color mail'>{host_info.host.email}</span>
+                            <button className='btn log-out-btn' onClick={()=>{Cookie.remove("host_token"); navigate("/", {replace : true})}}>
+                                Log out
+                            </button>
                         </div>
                     </div>
                     <div className='col-md-8 host-content'>
                         <div className='container-sm'>
                             <div>
-                                <h4 className='greeting'>Hello, Gilbert</h4>
+                                <h4 className='greeting'>Hello, {host_info.host.fullname}</h4>
                             </div>
                             <div className='host-listings bd-b'>
                                 <div className='row'>
-                                    <OtherListing/>
+                                  {
+                                    host_info && host_info.listings && host_info.listings.length !== 0 && host_info.listings.map((listing) => (
+                                        <OtherListing key={listing.listing_id} listing={listing} />
+                                    ))
+                                    }
                                     <div className='host-add-listing col-md-3'>
                                         <button onClick={()=>{set_add_listing(true)}}> 
                                             <div className='flex flex_col '>
@@ -130,15 +185,29 @@ function Host() {
                             <div className='host-reviews'>
                                 <div className='flex flex_row space-items'>
                                     <h4>Reviews</h4>
-                                    <ReviewCount/>
+                                    <ReviewCount positive={host_info.review_count.positive} negative={host_info.review_count.negative}/>
                                 </div>
                                 <div className='row' style={{marginTop:"25px"}}>
-                                   {/*  
-                                   <Review/>
-                                    <Review/>
-                                    <Review/>
-                                     */}
+                                 {
+                                    host_info.reviews.map(review=>{
+                                        return (
+                                            <Review review ={review} key={review.review_id}/>  
+                                        )
+                                    })
+                                }
                                 </div>
+                                <div className='flex flex_row center'>
+                                    <button className='btn btn-outline-ha-primary' disable = {host_info.next} onClick={()=>{
+                                            if(host_info.next){
+
+                                                get_reviews()
+                                            }
+                                        }} >
+                                            Show More
+                                    </button>   
+                                </div>
+                                <br/>
+                                <br/>
                             </div>
                         </div>
                     </div>
@@ -148,7 +217,7 @@ function Host() {
         </div>
         <Footer/>
     </div>
-  )
+    )
 }
 
 export default Host
